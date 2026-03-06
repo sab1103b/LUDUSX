@@ -5,7 +5,7 @@ public class EnemySpawner : MonoBehaviour
     public EnemyPool pool;
     public Transform player;
 
-    public float spawnDistance = 25f;
+    public Transform[] spawnPoints;
 
     public void SpawnEnemy()
     {
@@ -13,13 +13,11 @@ public class EnemySpawner : MonoBehaviour
 
         if (enemy == null) return;
 
-        Vector3 spawnPos = new Vector3(
-            Random.Range(-8f, 8f),
-            Random.Range(2f, 5f),
-            player.position.z + spawnDistance
-        );
+        // Elegir spawnpoint aleatorio
+        Transform spawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
-        enemy.transform.position = spawnPos;
+        enemy.transform.position = spawn.position;
+        enemy.transform.rotation = spawn.rotation;
 
         PATRONES pat = enemy.GetComponent<PATRONES>();
 
