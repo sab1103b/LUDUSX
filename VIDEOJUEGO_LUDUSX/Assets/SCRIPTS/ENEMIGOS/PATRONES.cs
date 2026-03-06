@@ -50,19 +50,19 @@ public class PATRONES : MonoBehaviour
 
     // CAZADOR
     private bool isJumping = false;
-    private Vector3 jumpDirection;
+    private bool isRetreating = false;
 
-    public float jumpDistance = 10f;
-    public float jumpSpeed = 12f;
-    public float jumpDuration = 1.2f;
+    private Vector3 jumpStart;
+    private Vector3 jumpTarget;
+
+    private Vector3 retreatDirection;
 
     private float jumpTimer = 0f;
 
-    public float jumpHeight = 4f;
-    public float retreatDistance = 25f; // distancia que se aleja después del salto
-
-    private bool isRetreating = false;
-    private Vector3 retreatDirection;
+    public float jumpDistance = 10f;
+    public float jumpHeight = 6f;
+    public float jumpDuration = 1f;
+    public float retreatDistance = 25f;
 
     void Start()
     {
@@ -196,15 +196,13 @@ public class PATRONES : MonoBehaviour
 
             float t = jumpTimer / jumpDuration;
 
-            Vector3 move = jumpDirection * jumpSpeed * Time.deltaTime;
+            // interpolación horizontal fija (no sigue al jugador)
+            Vector3 pos = Vector3.Lerp(jumpStart, jumpTarget, t);
 
-            // arco parabólico real
-            float height = Mathf.Sin(t * Mathf.PI) * jumpHeight;
+            // arco del salto
+            pos.y += Mathf.Sin(t * Mathf.PI) * jumpHeight;
 
-            Vector3 newPos = transform.position + move;
-            newPos.y = groundLimit + height;
-
-            if (jumpTimer >= jumpDuration)
+            if (t >= 1f)
             {
                 isJumping = false;
                 isRetreating = true;
@@ -213,7 +211,7 @@ public class PATRONES : MonoBehaviour
                 retreatDirection.y = 0;
             }
 
-            return newPos;
+            return pos;
         }
 
         // ======================
@@ -222,7 +220,9 @@ public class PATRONES : MonoBehaviour
         if (isRetreating)
         {
             if (Vector3.Distance(transform.position, playerHead.position) >= retreatDistance)
+            {
                 isRetreating = false;
+            }
 
             return transform.position + retreatDirection * forwardSpeed * Time.deltaTime;
         }
@@ -238,8 +238,8 @@ public class PATRONES : MonoBehaviour
             isJumping = true;
             jumpTimer = 0f;
 
-            jumpDirection = direction;
-            jumpDirection.Normalize();
+            jumpStart = transform.position;
+            jumpTarget = playerHead.position;
         }
 
         return transform.position + direction * forwardSpeed * Time.deltaTime;
